@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Collaborative spatial data editor</title>
+      <!--  <link rel="stylesheet" href="./index.css"/> why does this linkage not work? just tried to move css chunk below to linked file... -->
+        <style>
+            * { box-sizing: border-box; padding: 0; margin: 0; }
+            header { height: 30px; border: 2px solid silver; text-align: center; line-height: 30px; font: 20px Helvetica }
+            footer { height: 20px; text-align: left; line-height: 20px; font: 10px Helvetica }
+            .main_wrap { margin: 0; padding: 0; width: 100%; height: 100%; }
+            .wrapper { border: 2px black; }
+            .floated_left { float: left; width: 90%; height: 600px; }
+            .floated_right { float: right; width: 10%; height: 600px; }
+            .clear:after { clear: both; content: ""; display: table; }
+
+            #chat-container { font: 12px Helvetica, Arial;  }
+            
+            form { background: #000; padding: 1px;}
+            form input { width: 100%; margin-right: .5%; margin-left: .5%}
+            form button { width: 100%; background: rgb(130, 224, 255);}
+            #messages { list-style-type: none; margin: 0; padding: 5px;}
+            #messages li { padding: 5px 10px; }
+            #messages li:nth-child(odd) { background: #eee; }
+        </style>
+      <!-- External scripts -->
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+      
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+      
+  </head>
+  <body>
+    <div class="main_wrap">
+      <header>Collaborative spatial data editor with real-time chat</header>
+      <div class="wrapper clear">
+          <div id="map" class="floated_left"></div>
+
+          <div id="chat-container" class="floated_right">
+            <ul id="messages"></ul>
+            <form action="">
+                <input id="m" autocomplete="off" /><button>Send</button>
+            </form>
+          </div>
+      </div>
+      <footer>Developed by Clayton Hunter, January 2015</footer>
+    </div>
+      
+      <script>
+        var socket = io();
+        $('form').submit(function(){
+            socket.emit('chat message', $('#m').val());
+            $('#m').val('');
+            return false;
+        });
+        socket.on('chat message', function(msg){
+            $('#messages').append($('<li>').text(msg));
+        });
+
+        var startPoint = [9.936068, -84.097512],
+            mbAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+            mbUrl = 'https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
+            grayscale = L.tileLayer(mbUrl, {id: 'examples.map-20v6611k', attribution: mbAttr}),
+            map = new L.Map('map', {
+                layers: [grayscale], 
+                center: new L.LatLng(startPoint[0], startPoint[1]), 
+                zoom: 13
+            });
+        var drawnItems = L.featureGroup().addTo(map);
+        //gjsonLine.addTo(map); // doesn't add, why? >>> previously had manually cread single geoJSON line feature
+                                  
+        socket.on('new trip line', function(tripLine) {
+            console.log('in new line added feature');
+            for (trip in tripLine.features) {
+                var tmpLine = new L.polyline(tripLine.features[trip].geometry.coordinates)//, 
+                                //{onEachFeature: function (feature, layer) {
+                                  //  layer.bindPopup('routeID: ' + feature.properties.routeID) } });
+                tmpLine.bindPopup('routeID: ' + tripLine.features[trip].properties.routeID);
+                drawnItems.addLayer(tmpLine);
+            }
+        });
+          
+        socket.on('base data', function(baseData) {
+            console.log('socket base data triggered, baseData has ', baseData.features.length, ' features.');
+        //var tmpDrawnItems = {};
+            for (feat in baseData.features) {
+                if (baseData.features[feat].geometry.type == 'LineString') {
+                    var tmpLine = new L.polyline(baseData.features[feat].geometry.coordinates)//, 
+                    tmpLine.bindPopup('<strong>routeID:</strong> ' + baseData.features[feat].properties.routeID + '<br></br><strong>username:</strong> ' + baseData.features[feat].properties.username);
+                    drawnItems.addLayer(tmpLine);
+                    console.log('lines ', baseData.features[feat].properties.routeID,' added to drawnItems');
+                } else if (baseData.features[feat].geometry.type == 'Point') {
+                    var tmpLine = new L.marker(baseData.features[feat].geometry.coordinates);//, 
+                    tmpLine.bindPopup('stopID: ' + baseData.features[feat].properties.stopID);
+                    drawnItems.addLayer(tmpLine);
+                    console.log('lines ', baseData.features[feat].properties.stopID,' added to drawnItems');
+                } else {
+                    console.log('not point or linestring data, not added');
+                }
+            }
+            console.log('base data 2 loaded with ', drawnItems.getLayers().length, ' features added to drawnItems');
+        });
+          
+        map.on('dragend', function() {
+            console.log('map event triggered'); 
+            //$('#messages').append($('<li>').text('map dragged')); // success!
+        });
+      </script>
+  </body>
+</html>
