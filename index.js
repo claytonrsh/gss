@@ -41,11 +41,13 @@ io.on('connection', function(socket){
 // also one time data processing done below for line creation
 
 /*****************************
-    DATA PROCESSING
+    DATA PROCESSING - move to 'model' section to follow MVC framework
 ******************************/
 
-var file = 'data/boiling-inferno-6943-routes-export.json';
-var tripLines = { "type": "FeatureCollection", "features": [] }; // global variable for (synched?) line data
+var file = 'data/boiling-inferno-6943-routes-export.json'; // file to read in
+
+var tripLines = { "type": "FeatureCollection", "features": [] }; // global variable for (initial) base data
+
 jf.readFile(file, function(err, obj) {
   //console.log(util.inspect(obj))
     if (err) {
@@ -53,17 +55,14 @@ jf.readFile(file, function(err, obj) {
         return err;
     } else {
         //console.log(typeof obj, obj.length); // returns: object undefined
-        //var i = 0;
         for ( var routes in obj) {
-            //i = i + 1;
-            //console.log(i.toString() + ' ' + util.inspect(routes)); // returns: [value of i] ' ' [name of route upload]
-            //console.log('obj[routes] is ' + JSON.stringify(obj[routes]));
-            var route = obj[routes];
-            for (var trip in route) {
+            
+           // var route = obj[routes]; // simply place holder, can remove
+            
+            for (var trip in obj[routes]) {
                 if (obj[routes][trip]['geometry'] && Object.keys(obj[routes][trip]['geometry']).length > 100) {
                     // upload has geometry with >100 pings, ~= 3.5 minutes (5 sec/ping * 100 pings / 60 sec)
                     //console.log('geom length is ', Object.keys(obj[routes][trip]['geometry']).length, ' trip value is ', trip.toString(), ' val of geom[0][0] is ', Object.keys(obj[routes][trip]['geometry'])[0]);
-                    //console.log('geom keys are ', Object.keys(obj[routes][trip]['geometry']).toString());
                     var geoms = obj[routes][trip]['geometry'];
                     var tripLine = { type: "Feature", geometry: { type: "LineString", coordinates: [] },
                                     properties: { // make dynamic for input
@@ -85,11 +84,12 @@ jf.readFile(file, function(err, obj) {
                 }
             }
         }
-        var testMarker = { type: "Feature", geometry: { type: "Point", coordinates: [9.936068, -84.097512] },
+        var testMarker = { type: "Feature", geometry: { type: "Point", coordinates: [] },
                                     properties: { // make dynamic for input
                                         created: 1232, stopID: 'test stop', 
                                         username: 'this user' }
                     };
+        testMarker.geometry.coordinates.push(9.936068, -84.097512);
         tripLines.features.push(testMarker);
         console.log('tripLines has ', tripLines.features.length, ' features');
     }

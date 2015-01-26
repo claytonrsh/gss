@@ -85,28 +85,57 @@
         socket.on('base data', function(baseData) {
             console.log('socket base data triggered, baseData has ', baseData.features.length, ' features.');
         //var tmpDrawnItems = {};
+            
+            
             for (feat in baseData.features) {
                 if (baseData.features[feat].geometry.type == 'LineString') {
                     var tmpLine = new L.polyline(baseData.features[feat].geometry.coordinates)//, 
-                    tmpLine.bindPopup('<strong>routeID:</strong> ' + baseData.features[feat].properties.routeID + '<br></br><strong>username:</strong> ' + baseData.features[feat].properties.username);
+                    //tmpLine.bindPopup('<strong>routeID:</strong> ' + baseData.features[feat].properties.routeID + '<br></br><strong>username:</strong> ' + baseData.features[feat].properties.username);
+                    tmpLine.bindPopup(createPopup(baseData.features[feat].properties));
                     drawnItems.addLayer(tmpLine);
-                    console.log('lines ', baseData.features[feat].properties.routeID,' added to drawnItems');
+                    console.log('lines for route ', baseData.features[feat].properties.routeID,' added to drawnItems');
                 } else if (baseData.features[feat].geometry.type == 'Point') {
-                    var tmpLine = new L.marker(baseData.features[feat].geometry.coordinates);//, 
-                    tmpLine.bindPopup('stopID: ' + baseData.features[feat].properties.stopID);
-                    drawnItems.addLayer(tmpLine);
-                    console.log('lines ', baseData.features[feat].properties.stopID,' added to drawnItems');
+                    var tmpPoint = new L.marker(baseData.features[feat].geometry.coordinates);//, 
+                    //tmpLine.bindPopup('<strong>stopID:</strong> ' + baseData.features[feat].properties.stopID);
+                    tmpPoint.bindPopup(createPopup(baseData.features[feat].properties));
+                    drawnItems.addLayer(tmpPoint);
+                    console.log('Point ', baseData.features[feat].properties.stopID,' added to drawnItems');
+                } else if (baseData.features[feat].geometry.type == 'Polygon') {
+                    var tmpPoly = new L.polygon(baseData.features[feat].geometry.coordinates);//, 
+                    tmpPoly.bindPopup('<strong>polyID:</strong> ' + baseData.features[feat].properties.ID);
+                    drawnItems.addLayer(tmpPoly);
+                    console.log('Polygon ', baseData.features[feat].properties.ID,' added to drawnItems');
                 } else {
-                    console.log('not point or linestring data, not added');
+                    console.log('not point, linestring, or polygon GeoJSON data, not added');
                 }
             }
-            console.log('base data 2 loaded with ', drawnItems.getLayers().length, ' features added to drawnItems');
+            console.log('base data loaded with ', drawnItems.getLayers().length, ' features added to drawnItems');
         });
           
         map.on('dragend', function() {
             console.log('map event triggered'); 
             //$('#messages').append($('<li>').text('map dragged')); // success!
         });
+          
+          /********************
+            HELPER FUNCTIONS - should be moved to separate .js probably
+            ******************/
+          function geoJsonToLeaf(data) {
+              
+          }
+          
+          function createPopup(props) {
+              //console.log('props are ' + JSON.stringify(props));
+              var popup = '<table><tr><th>Field</th><th>Value</th></tr>';
+              for (var field in props) {
+                  //var thisField = field.toString();
+                  popup += '<tr><td>' + field + '</td><td>' + props[field] + '</td></tr>'
+              }
+              popup += '</table>';
+              //console.log('created popup is ' + popup.toString());
+              return popup;
+          }
+          
       </script>
   </body>
 </html>
