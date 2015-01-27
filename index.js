@@ -8,10 +8,13 @@ var app = require('express')(),
     jf = require('jsonfile');
 //    util = require('util');
 
+//app.set('port', (process.env.PORT || 3000));
+
 // start server
-http.listen(3000, function(){
-  //console.log('listening on *:3000');
-});
+app.listen(process.env.PORT || 5000)
+
+//app.listen(app.get('port'), function(){
+  //console.log('listening on *:3000');});
 
 /****************************
     ROUTES
