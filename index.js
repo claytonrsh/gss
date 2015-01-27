@@ -10,7 +10,7 @@ var app = require('express')(),
 
 // start server
 http.listen(3000, function(){
-  console.log('listening on *:3000');
+  //console.log('listening on *:3000');
 });
 
 /****************************
@@ -26,7 +26,7 @@ app.get('/', function(req, res){
 *****************************/
 
 io.on('connection', function(socket){
-    console.log('a client connected');
+    //console.log('a client connected');
     /*socket.on('disconnect', function(){
         console.log('user disconnected');
     });*/
@@ -77,10 +77,10 @@ jf.readFile(file, function(err, obj) {
                     //console.log('tripLine with geoms is: ', JSON.stringify(tripLine));
                     //io.emit('new trip line', tripLine); // emit this trip to socket - no good, should expose funciton / variable to client probably not via socket...
                     tripLines.features.push(tripLine);
-                    console.log('new trip line added to tripLines global variable');
+                    //console.log('new trip line added to tripLines global variable');
                 } else {
                     // console.log('trip has no geometry or geom.length is < 100 (~3.5 mins)');
-                    console.log('trip not logged, has keys: ', Object.keys(obj[routes][trip]).toString());
+                    //console.log('trip not logged, has keys: ', Object.keys(obj[routes][trip]).toString());
                 }
             }
         }
@@ -91,6 +91,6 @@ jf.readFile(file, function(err, obj) {
                     };
         testMarker.geometry.coordinates.push(9.936068, -84.097512);
         tripLines.features.push(testMarker);
-        console.log('tripLines has ', tripLines.features.length, ' features');
+        //console.log('tripLines has ', tripLines.features.length, ' features');
     }
 });
