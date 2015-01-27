@@ -102,7 +102,7 @@
                     console.log('Point ', baseData.features[feat].properties.stopID,' added to drawnItems');
                 } else if (baseData.features[feat].geometry.type == 'Polygon') {
                     var tmpPoly = new L.polygon(baseData.features[feat].geometry.coordinates);//, 
-                    tmpPoly.bindPopup('<strong>polyID:</strong> ' + baseData.features[feat].properties.ID);
+                    tmpPoly.bindPopup(createPopup(baseData.features[feat].properties));
                     drawnItems.addLayer(tmpPoly);
                     console.log('Polygon ', baseData.features[feat].properties.ID,' added to drawnItems');
                 } else {

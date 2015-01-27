@@ -2,11 +2,11 @@
     INITIALIZE
 ****************/
 
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var jf = require('jsonfile');
-var util = require('util');
+var app = require('express')(),
+    http = require('http').Server(app),
+    io = require('socket.io')(http),
+    jf = require('jsonfile');
+//    util = require('util');
 
 // start server
 http.listen(3000, function(){
