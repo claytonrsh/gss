@@ -14,7 +14,7 @@
             .clear:after { clear: both; content: ""; display: table; }
 
             #chat-container { font: 12px Helvetica, Arial;  }
-            
+
             form { background: #000; padding: 1px;}
             form input { width: 100%; margin-right: .5%; margin-left: .5%}
             form button { width: 100%; background: rgb(130, 224, 255);}
@@ -25,7 +25,7 @@
       <!-- External scripts -->
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-      
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
       <!--
@@ -48,16 +48,16 @@
       </div>
       <footer>Developed by Clayton Hunter, January 2015</footer>
     </div>
-      
+
       <script>
         var socket = io();
         $('form').submit(function(){
-            socket.emit('chat message', $('#m').val());
-            $('#m').val('');
+            socket.emit('chat message', $('#m').val()); // get and emit value from form
+            $('#m').val(''); // reset form field
             return false;
         });
         socket.on('chat message', function(msg){
-            $('#messages').append($('<li>').text(msg));
+            $('#messages').append($('<li>').text(msg)); // add msg to messages
         });
 
         var startPoint = [9.936068, -84.097512],
@@ -67,43 +67,43 @@
             mbUrl = 'https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
             grayscale = L.tileLayer(mbUrl, {id: 'examples.map-20v6611k', attribution: mbAttr}),
             map = new L.Map('map', {
-                layers: [grayscale], 
-                center: new L.LatLng(startPoint[0], startPoint[1]), 
+                layers: [grayscale],
+                center: new L.LatLng(startPoint[0], startPoint[1]),
                 zoom: 13
             });
         var drawnItems = L.featureGroup().addTo(map);
-                                  
+
         socket.on('new trip line', function(tripLine) {
             console.log('in new line added feature');
             for (trip in tripLine.features) {
-                var tmpLine = new L.polyline(tripLine.features[trip].geometry.coordinates)//, 
+                var tmpLine = new L.polyline(tripLine.features[trip].geometry.coordinates)//,
                                 //{onEachFeature: function (feature, layer) {
                                   //  layer.bindPopup('routeID: ' + feature.properties.routeID) } });
                 tmpLine.bindPopup('routeID: ' + tripLine.features[trip].properties.routeID);
                 drawnItems.addLayer(tmpLine);
             }
         });
-          
+
         socket.on('base data', function(baseData) {
             console.log('socket base data triggered, baseData has ', baseData.features.length, ' features.');
         //var tmpDrawnItems = {};
-            
-            
+
+
             for (feat in baseData.features) {
                 if (baseData.features[feat].geometry.type == 'LineString') {
-                    var tmpLine = new L.polyline(baseData.features[feat].geometry.coordinates)//, 
+                    var tmpLine = new L.polyline(baseData.features[feat].geometry.coordinates)//,
                     //tmpLine.bindPopup('<strong>routeID:</strong> ' + baseData.features[feat].properties.routeID + '<br></br><strong>username:</strong> ' + baseData.features[feat].properties.username);
                     tmpLine.bindPopup(createPopup(baseData.features[feat].properties));
                     drawnItems.addLayer(tmpLine);
                     //console.log('lines for route ', baseData.features[feat].properties.routeID,' added to drawnItems');
                 } else if (baseData.features[feat].geometry.type == 'Point') {
-                    var tmpPoint = new L.marker(baseData.features[feat].geometry.coordinates);//, 
+                    var tmpPoint = new L.marker(baseData.features[feat].geometry.coordinates);//,
                     //tmpLine.bindPopup('<strong>stopID:</strong> ' + baseData.features[feat].properties.stopID);
                     tmpPoint.bindPopup(createPopup(baseData.features[feat].properties));
                     drawnItems.addLayer(tmpPoint);
                     //console.log('Point ', baseData.features[feat].properties.stopID,' added to drawnItems');
                 } else if (baseData.features[feat].geometry.type == 'Polygon') {
-                    var tmpPoly = new L.polygon(baseData.features[feat].geometry.coordinates);//, 
+                    var tmpPoly = new L.polygon(baseData.features[feat].geometry.coordinates);//,
                     tmpPoly.bindPopup(createPopup(baseData.features[feat].properties));
                     drawnItems.addLayer(tmpPoly);
                     //console.log('Polygon ', baseData.features[feat].properties.ID,' added to drawnItems');
@@ -113,19 +113,19 @@
             }
             console.log('base data loaded with ', drawnItems.getLayers().length, ' features added to drawnItems');
         });
-          
+
         map.on('dragend', function() {
-            console.log('map event triggered'); 
+            console.log('map event triggered');
             //$('#messages').append($('<li>').text('map dragged')); // success!
         });
-          
+
           /********************
             HELPER FUNCTIONS - should be moved to separate .js probably
             ******************/
           function geoJsonToLeaf(data) {
-              
+
           }
-          
+
           function createPopup(props) {
               //console.log('props are ' + JSON.stringify(props));
               var popup = '<table><tr><th>Field</th><th>Value</th></tr>';
@@ -137,7 +137,7 @@
               //console.log('created popup is ' + popup.toString());
               return popup;
           }
-          
+
       </script>
   </body>
 </html>

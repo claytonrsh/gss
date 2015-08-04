@@ -28,14 +28,16 @@ app.get('/', function(req, res){
     REAL TIME DATA FEED
 *****************************/
 
+var messages = {"usr": [], "msg": []};
+
 io.on('connection', function(socket){
     //console.log('a client connected');
     /*socket.on('disconnect', function(){
         console.log('user disconnected');
     });*/
     io.emit('base data', tripLines); // send base data to client(s) on connection
-    
-    socket.on('chat message', function(msg){
+
+    socket.on('chat message', function(msg){ // should add message object to track sender and show last X messages for new log in
         //console.log('message: ' + msg);
         io.emit('chat message', msg);
     });
@@ -51,6 +53,8 @@ var file = 'data/boiling-inferno-6943-routes-export.json'; // file to read in
 
 var tripLines = { "type": "FeatureCollection", "features": [] }; // global variable for (initial) base data
 
+
+// read in line by line with client side command to see points snapped to
 jf.readFile(file, function(err, obj) {
   //console.log(util.inspect(obj))
     if (err) {
@@ -59,17 +63,17 @@ jf.readFile(file, function(err, obj) {
     } else {
         //console.log(typeof obj, obj.length); // returns: object undefined
         for ( var routes in obj) {
-            
+
            // var route = obj[routes]; // simply place holder, can remove
-            
+
             for (var trip in obj[routes]) {
                 if (obj[routes][trip]['geometry'] && Object.keys(obj[routes][trip]['geometry']).length > 100) {
                     // upload has geometry with >100 pings, ~= 3.5 minutes (5 sec/ping * 100 pings / 60 sec)
                     //console.log('geom length is ', Object.keys(obj[routes][trip]['geometry']).length, ' trip value is ', trip.toString(), ' val of geom[0][0] is ', Object.keys(obj[routes][trip]['geometry'])[0]);
                     var geoms = obj[routes][trip]['geometry'];
                     var tripLine = { type: "Feature", geometry: { type: "LineString", coordinates: [] },
-                                    properties: { // make dynamic for input
-                                        created: obj[routes][trip]['created'], routeID: obj[routes][trip]['routeID'], 
+                                    properties: { // TO DO: make dynamic for input
+                                        created: obj[routes][trip]['created'], routeID: obj[routes][trip]['routeID'],
                                         username: obj[routes][trip]['username'] }
                     };
                     //console.log('tripLine initialized as: ', JSON.stringify(tripLine));
@@ -89,7 +93,7 @@ jf.readFile(file, function(err, obj) {
         }
         var testMarker = { type: "Feature", geometry: { type: "Point", coordinates: [] },
                                     properties: { // make dynamic for input
-                                        created: 1232, stopID: 'test stop', 
+                                        created: 1232, stopID: 'test stop',
                                         username: 'this user' }
                     };
         testMarker.geometry.coordinates.push(9.936068, -84.097512);
